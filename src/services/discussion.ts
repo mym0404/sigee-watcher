@@ -22,7 +22,7 @@ export class DiscussionService {
 		this.owner = owner;
 		this.repo = repo;
 		this.genAI = new GoogleGenerativeAI(geminiApiKey);
-		this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+		this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 	}
 
 	// Generate the discussion title for a post (matching giscus format)
