@@ -6,6 +6,9 @@ import type {
 } from "../types/index.js";
 
 export class DiscussionService {
+	private config: DiscussionConfig;
+	private owner: string;
+	private repo: string;
 	private genAI: GoogleGenerativeAI;
 	private model: any;
 
@@ -38,19 +41,19 @@ export class DiscussionService {
 		const percentage =
 			(new Date("2026-09-05").getTime() - new Date().getTime()) /
 			(new Date("2026-09-05").getTime() - new Date("2025-01-06").getTime());
+
+		// Generate ASCII progress bar
+		const generateAsciiBar = (percent: number, length: number = 20): string => {
+			const filled = Math.round((1 - percent) * length);
+			const empty = length - filled;
+			return "█".repeat(filled) + "░".repeat(empty);
+		};
 		try {
 			const prompt = `
 다음 블로그 포스트의 제목과 내용에 대해서 칭찬하는 글을 존댓말로 여러 이모티콘을 섞어서
 화려하게 300자 정도로 작성하며 해군 SW 개발병 710기의 동기로써 자랑스럽다는 내용의 블로그 포스팅에 대한 댓글을 generation 해주세요.
 
 제 동기의 이름은 최민석입니다. 그는 매우 멋진 개발자이며 같은 생활관에서 솔선수범으로 모든것을 하는 동기입니다.
-
-글의 마지막에 전역 날짜 계산 status 를 넣어주세요
- 예시는 다음과 같습니다. ascii 코드를 ${percentage}만큼 채워주세요.
-
-해군병 SW 개발병 710기 전역까지
-██████████░░░░░░░░░░ ${percentage.toFixed(2)}%
-(2025.01.06 ~ 2026.09.05)
 
 제목: ${post.title}
 카테고리: ${post.category}
@@ -64,14 +67,21 @@ export class DiscussionService {
 - 300자 정도
 - 해군 SW 개발병 710기 동기로서 자랑스럽다는 내용 포함
 - 블로그 댓글 형태
-- 댓글의 마지막에 ascii bar 를 전역 퍼센테이지만큼 채워서 변경해서 넣기 
 `;
 
 			const result = await this.model.generateContent(prompt);
 			const response = await result.response;
 			const text = response.text();
 
-			return text || this.getFallbackComment(post);
+			const ret = text || this.getFallbackComment(post);
+
+			return `${ret}
+
+
+**해군병 SW 개발병 710기 전역**까지
+${generateAsciiBar(percentage, 20)} ${(percentage * 100).toFixed(2)}%
+(2025.01.06 ~ 2026.09.05)
+`.trim();
 		} catch (error) {
 			console.error("Error generating comment with Gemini:", error);
 			return this.getFallbackComment(post);
