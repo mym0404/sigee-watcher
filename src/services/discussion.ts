@@ -6,9 +6,6 @@ import type {
 } from "../types/index.js";
 
 export class DiscussionService {
-	private config: DiscussionConfig;
-	private owner: string;
-	private repo: string;
 	private genAI: GoogleGenerativeAI;
 	private model: any;
 
