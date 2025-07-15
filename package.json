@@ -13,6 +13,7 @@
     "format": "biome format --write src/",
     "check": "biome check --write src/",
     "typecheck": "tsc --noEmit",
+    "t": "pnpm check && pnpm run typecheck",
     "clean": "rm -rf dist"
   },
   "keywords": [],

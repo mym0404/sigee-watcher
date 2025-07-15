@@ -31,10 +31,6 @@ export interface AppConfig {
 		repo: string;
 	};
 	discussion: DiscussionConfig;
-	server: {
-		port: number;
-		cronSchedule: string;
-	};
 	gemini: {
 		apiKey: string;
 	};

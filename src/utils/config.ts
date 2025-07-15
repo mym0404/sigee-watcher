@@ -36,10 +36,6 @@ export const getConfig = (): AppConfig => {
 			repoId: process.env.DISCUSSION_REPO_ID as string,
 			categoryId: process.env.DISCUSSION_CATEGORY_ID as string,
 		},
-		server: {
-			port: Number.parseInt(process.env.PORT || "3000", 10),
-			cronSchedule: process.env.CRON_SCHEDULE || "0 */6 * * *",
-		},
 		gemini: {
 			apiKey: process.env.GEMINI_API_KEY as string,
 		},
