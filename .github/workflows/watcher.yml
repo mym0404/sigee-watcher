@@ -2,8 +2,8 @@ name: Sigee Watcher
 
 on:
   schedule:
-    # Run every minute
-    - cron: "* * * * *"
+    # Run every 3 minutes
+    - cron: "*/3 * * * *"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
