@@ -1,0 +1,44 @@
+name: Sigee Watcher
+
+on:
+  schedule:
+    # Run every minute
+    - cron: "* * * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  run-watcher:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Run watcher
+        run: pnpm start
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # GITHUB_OWNER: ${{ secrets.GITHUB_OWNER }}
+          # GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+          # DISCUSSION_REPO: ${{ secrets.DISCUSSION_REPO }}
+          # DISCUSSION_REPO_ID: ${{ secrets.DISCUSSION_REPO_ID }}
+          # DISCUSSION_CATEGORY_ID: ${{ secrets.DISCUSSION_CATEGORY_ID }}
+
