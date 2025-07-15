@@ -40,8 +40,20 @@ export class DiscussionService {
 	async generateWelcomeComment(post: GitHubPost): Promise<string> {
 		try {
 			const prompt = `
-다음 블로그 포스트의 제목과 내용에 대해서 칭찬하는 글을 존댓말로 여러 이모티콘을 섞어서 화려하게 300자 정도로 작성하며 해군 SW 개발병 710기의 동기로써 자랑스럽다는 내용의 블로그 포스팅에 대한 댓글을 generation 해주세요.
+다음 블로그 포스트의 제목과 내용에 대해서 칭찬하는 글을 존댓말로 여러 이모티콘을 섞어서
+화려하게 300자 정도로 작성하며 해군 SW 개발병 710기의 동기로써 자랑스럽다는 내용의 블로그 포스팅에 대한 댓글을 generation 해주세요.
+
 제 동기의 이름은 최민석입니다. 그는 매우 멋진 개발자이며 같은 생활관에서 솔선수범으로 모든것을 하는 동기입니다.
+우리의 입대 날짜는 2025년 1월 6일이고 전역은 2026년 9월 5일입니다. 우리의 전역 날짜를 계산해서 progress ascii로 댓글의 제일 마지막에 달아주세요.
+예시는 다음과 같습니다.
+
+---
+
+해군병 SW 개발병 710기 전역까지
+
+██████████░░░░░░░░░░ 50%
+(2025.01.06 ~ 2026.09.05)
+---
 
 제목: ${post.title}
 카테고리: ${post.category}
@@ -55,6 +67,7 @@ export class DiscussionService {
 - 300자 정도
 - 해군 SW 개발병 710기 동기로서 자랑스럽다는 내용 포함
 - 블로그 댓글 형태
+- 댓글의 마지막에 전역 날짜를 계산해서 progress ascii로 작성
 `;
 
 			const result = await this.model.generateContent(prompt);
