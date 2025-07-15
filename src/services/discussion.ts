@@ -79,7 +79,7 @@ export class DiscussionService {
 
 
 **해군병 SW 개발병 710기 전역**까지
-${generateAsciiBar(percentage, 20)} ${(percentage * 100).toFixed(2)}%
+${generateAsciiBar(percentage, 20)} ${((1 - percentage) * 100).toFixed(2)}%
 *(2025.01.06 ~ 2026.09.05)*
 `.trim();
 		} catch (error) {
