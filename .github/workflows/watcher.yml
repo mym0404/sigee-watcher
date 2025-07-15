@@ -3,7 +3,7 @@ name: Sigee Watcher
 on:
   schedule:
     # Run every 1 minutes
-    - cron: "*/3 * * * *"
+    - cron: "* * * * *"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
       - name: Run watcher
         run: pnpm start
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # GITHUB_OWNER: ${{ secrets.GITHUB_OWNER }}
           # GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
