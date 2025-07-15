@@ -11,7 +11,7 @@ export class WatcherService {
 	private cacheDir: string = ".cache";
 	private processedPostsFile: string = join(
 		this.cacheDir,
-		"processed-postid.json",
+		"processed-postidid.json",
 	);
 
 	constructor(config: AppConfig) {
