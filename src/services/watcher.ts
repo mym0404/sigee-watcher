@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+import { join } from "path";
 import type { AppConfig, Discussion, GitHubPost } from "../types/index.js";
 import { DiscussionService } from "./discussion.js";
 import { GitHubService } from "./github.js";
@@ -6,6 +8,11 @@ export class WatcherService {
 	private githubService: GitHubService;
 	private discussionService: DiscussionService;
 	private config: AppConfig;
+	private cacheDir: string = ".cache";
+	private processedPostsFile: string = join(
+		this.cacheDir,
+		"processed-posts.json",
+	);
 
 	constructor(config: AppConfig) {
 		this.config = config;
@@ -20,6 +27,7 @@ export class WatcherService {
 			config.github.repo,
 			config.gemini.apiKey,
 		);
+		this.initializeCache();
 	}
 
 	async checkAndUpdatePosts(): Promise<void> {
@@ -30,8 +38,17 @@ export class WatcherService {
 			const posts = await this.githubService.getPostFolders();
 			console.log(`Found ${posts.length} posts to check`);
 
+			// Load processed posts cache
+			const processedPosts = await this.loadProcessedPosts();
+
 			// Process each post
 			for (const post of posts) {
+				// Skip if already processed
+				if (this.isPostProcessed(post, processedPosts)) {
+					console.log(`Skipping already processed post: ${post.folderName}`);
+					continue;
+				}
+
 				console.log(`Processing post: ${post.folderName}`);
 
 				const discussionTitle =
@@ -45,7 +62,12 @@ export class WatcherService {
 
 				// Process the discussion (add comments if needed)
 				if (discussion) {
-					await this.processDiscussion(post, discussion);
+					const wasProcessed = await this.processDiscussion(post, discussion);
+
+					// Mark as processed if comment was added or already exists
+					if (wasProcessed) {
+						await this.markPostAsProcessed(post);
+					}
 				}
 			}
 
@@ -94,7 +116,7 @@ export class WatcherService {
 	private async processDiscussion(
 		post: GitHubPost,
 		discussion: Discussion,
-	): Promise<void> {
+	): Promise<boolean> {
 		// Discussion exists, check if it has comments
 		const comments = await this.githubService.getDiscussionComments(
 			discussion.number,
@@ -126,15 +148,67 @@ export class WatcherService {
 
 				if (success) {
 					console.log(`✅ Added welcome comment to ${post.folderName}`);
+					return true;
 				} else {
 					console.log(`❌ Failed to add comment to ${post.folderName}`);
+					return false;
 				}
 			}
+			return false;
 		} else {
 			console.log(
 				`Discussion for ${post.folderName} already has mym0404 comment, skipping`,
 			);
+			return true; // Already processed
 		}
+	}
+
+	private async initializeCache(): Promise<void> {
+		try {
+			await fs.mkdir(this.cacheDir, { recursive: true });
+		} catch (error) {
+			console.error("Failed to create cache directory:", error);
+		}
+	}
+
+	private async loadProcessedPosts(): Promise<Set<string>> {
+		try {
+			const data = await fs.readFile(this.processedPostsFile, "utf-8");
+			const processedPosts = JSON.parse(data);
+			return new Set(processedPosts);
+		} catch (error) {
+			// File doesn't exist or is invalid, return empty set
+			return new Set();
+		}
+	}
+
+	private async saveProcessedPosts(processedPosts: Set<string>): Promise<void> {
+		try {
+			const data = JSON.stringify([...processedPosts], null, 2);
+			await fs.writeFile(this.processedPostsFile, data, "utf-8");
+		} catch (error) {
+			console.error("Failed to save processed posts cache:", error);
+		}
+	}
+
+	private generatePostId(post: GitHubPost): string {
+		return post.folderName;
+	}
+
+	private isPostProcessed(
+		post: GitHubPost,
+		processedPosts: Set<string>,
+	): boolean {
+		const postId = this.generatePostId(post);
+		return processedPosts.has(postId);
+	}
+
+	private async markPostAsProcessed(post: GitHubPost): Promise<void> {
+		const processedPosts = await this.loadProcessedPosts();
+		const postId = this.generatePostId(post);
+		processedPosts.add(postId);
+		await this.saveProcessedPosts(processedPosts);
+		console.log(`Marked post as processed: ${post.folderName}`);
 	}
 
 	async run(): Promise<void> {

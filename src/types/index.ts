@@ -34,5 +34,4 @@ export interface AppConfig {
 	gemini: {
 		apiKey: string;
 	};
-	webhookSecret?: string;
 }

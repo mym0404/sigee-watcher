@@ -3,15 +3,16 @@ import type { AppConfig } from "../types/index.js";
 
 config();
 
-const requiredEnvVars = [
-	"GITHUB_TOKEN",
-	"GITHUB_OWNER",
-	"GITHUB_REPO",
-	"DISCUSSION_REPO",
-	"DISCUSSION_REPO_ID",
-	"DISCUSSION_CATEGORY_ID",
-	"GEMINI_API_KEY",
-] as const;
+// Default configuration values
+const DEFAULT_CONFIG = {
+	GITHUB_OWNER: "sigee-min",
+	GITHUB_REPO: "www.sigee.xyz",
+	DISCUSSION_REPO: "sigee-min/www.sigee.xyz",
+	DISCUSSION_REPO_ID: "R_kgDOPCTBLQ",
+	DISCUSSION_CATEGORY_ID: "DIC_kwDOPCTBLc4CsOn9",
+} as const;
+
+const requiredEnvVars = ["GITHUB_TOKEN", "GEMINI_API_KEY"] as const;
 
 const validateEnvironment = (): void => {
 	const missing = requiredEnvVars.filter((key) => !process.env[key]);
@@ -28,17 +29,19 @@ export const getConfig = (): AppConfig => {
 	return {
 		github: {
 			token: process.env.GITHUB_TOKEN as string,
-			owner: process.env.GITHUB_OWNER as string,
-			repo: process.env.GITHUB_REPO as string,
+			owner: process.env.GITHUB_OWNER || DEFAULT_CONFIG.GITHUB_OWNER,
+			repo: process.env.GITHUB_REPO || DEFAULT_CONFIG.GITHUB_REPO,
 		},
 		discussion: {
-			repo: process.env.DISCUSSION_REPO as string,
-			repoId: process.env.DISCUSSION_REPO_ID as string,
-			categoryId: process.env.DISCUSSION_CATEGORY_ID as string,
+			repo: process.env.DISCUSSION_REPO || DEFAULT_CONFIG.DISCUSSION_REPO,
+			repoId:
+				process.env.DISCUSSION_REPO_ID || DEFAULT_CONFIG.DISCUSSION_REPO_ID,
+			categoryId:
+				process.env.DISCUSSION_CATEGORY_ID ||
+				DEFAULT_CONFIG.DISCUSSION_CATEGORY_ID,
 		},
 		gemini: {
 			apiKey: process.env.GEMINI_API_KEY as string,
 		},
-		webhookSecret: process.env.WEBHOOK_SECRET,
 	};
 };
