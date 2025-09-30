@@ -2,8 +2,8 @@ name: Sigee Watcher
 
 on:
   schedule:
-    # Run every 1 minutes
-    - cron: "* * * * *"
+    # Run every day at midnight (UTC)
+    - cron: "0 0 * * *"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -32,14 +32,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
-
-      - name: Cache processed posts
-        uses: actions/cache@v4
-        with:
-          path: .cache
-          key: ${{ runner.os }}-processed-post-id-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-processed-posts-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
