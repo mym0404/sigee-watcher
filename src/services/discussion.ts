@@ -71,7 +71,7 @@ export class DiscussionService {
 		endDate: string;
 		label: string;
 	}): string {
-		const now = new Date().getTime();
+		const now = Date.now();
 		const start = new Date(config.startDate).getTime();
 		const end = new Date(config.endDate).getTime();
 		const percentage = (end - now) / (end - start);
