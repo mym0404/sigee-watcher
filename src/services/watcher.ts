@@ -246,7 +246,7 @@ export class WatcherService {
 		const lastProcessedDate = processedPosts.get(postId);
 
 		if (!lastProcessedDate) {
-			return { shouldSkip: false, needsReprocessing: false };
+			return { shouldSkip: false, needsReprocessing: true };
 		}
 
 		// Check if more than 30 days have passed
