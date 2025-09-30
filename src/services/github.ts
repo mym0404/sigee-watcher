@@ -5,20 +5,22 @@ export class GitHubService {
 	private readonly _octokit: Octokit;
 	private readonly owner: string;
 	private readonly repo: string;
+	private readonly postsPath: string;
 
 	get octokit(): Octokit {
 		return this._octokit;
 	}
 
-	constructor(token: string, owner: string, repo: string) {
+	constructor(token: string, owner: string, repo: string, postsPath: string) {
 		this._octokit = new Octokit({
 			auth: token,
 		});
 		this.owner = owner;
 		this.repo = repo;
+		this.postsPath = postsPath;
 	}
 
-	async getPostFolders(path = "src/content/posts"): Promise<GitHubPost[]> {
+	async getPostFolders(path = this.postsPath): Promise<GitHubPost[]> {
 		try {
 			const { data } = await this._octokit.rest.repos.getContent({
 				owner: this.owner,

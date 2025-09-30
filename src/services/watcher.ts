@@ -24,6 +24,7 @@ export class WatcherService {
 			config.github.token,
 			repoConfig.owner,
 			repoConfig.repo,
+			repoConfig.postsPath,
 		);
 		this.discussionService = new DiscussionService(
 			repoConfig.discussion,

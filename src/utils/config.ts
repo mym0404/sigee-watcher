@@ -19,6 +19,7 @@ const REPO_CONFIGS: Record<string, GitHubRepoConfig> = {
 	"sigee-min/www.sigee.xyz": {
 		owner: "sigee-min",
 		repo: "www.sigee.xyz",
+		postsPath: "src/content/posts",
 		discussion: {
 			repo: "sigee-min/www.sigee.xyz",
 			repoId: "R_kgDOPCTBLQ",
@@ -107,6 +108,7 @@ const REPO_CONFIGS: Record<string, GitHubRepoConfig> = {
 	"HotHyun/hothyun.github.io": {
 		owner: "HotHyun",
 		repo: "hothyun.github.io",
+		postsPath: "_posts",
 		discussion: {
 			repo: "HotHyun/hothyun.github.io",
 			repoId: "R_kgDOP0aOYg",

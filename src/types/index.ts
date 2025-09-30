@@ -42,6 +42,7 @@ export interface CommentGenerationConfig {
 export interface GitHubRepoConfig {
 	owner: string;
 	repo: string;
+	postsPath: string;
 	discussion: DiscussionConfig;
 	commentGeneration: CommentGenerationConfig;
 }
