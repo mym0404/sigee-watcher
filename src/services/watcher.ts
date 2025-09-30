@@ -5,6 +5,7 @@ import type {
 	Discussion,
 	GitHubPost,
 	GitHubRepoConfig,
+	ProcessedPost,
 } from "../types/index.js";
 import { DiscussionService } from "./discussion.js";
 import { GitHubService } from "./github.js";
@@ -56,13 +57,22 @@ export class WatcherService {
 
 			// Process each post
 			for (const post of posts) {
-				// Skip if already processed
-				if (this.isPostProcessed(post, processedPosts)) {
+				const { shouldSkip, needsReprocessing } = this.checkPostStatus(
+					post,
+					processedPosts,
+				);
+
+				// Skip if already processed and not yet time to reprocess
+				if (shouldSkip) {
 					console.log(`Skipping already processed post: ${post.folderName}`);
 					continue;
 				}
 
-				console.log(`Processing post: ${post.folderName}`);
+				if (needsReprocessing) {
+					console.log(`Re-processing post (30+ days): ${post.folderName}`);
+				} else {
+					console.log(`Processing post: ${post.folderName}`);
+				}
 
 				const discussionTitle =
 					this.discussionService.generateDiscussionTitle(post);
@@ -75,7 +85,11 @@ export class WatcherService {
 
 				// Process the discussion (add comments if needed)
 				if (discussion) {
-					const wasProcessed = await this.processDiscussion(post, discussion);
+					const wasProcessed = await this.processDiscussion(
+						post,
+						discussion,
+						needsReprocessing,
+					);
 
 					// Mark as processed if comment was added or already exists
 					if (wasProcessed) {
@@ -129,6 +143,7 @@ export class WatcherService {
 	private async processDiscussion(
 		post: GitHubPost,
 		discussion: Discussion,
+		forceReprocess = false,
 	): Promise<boolean> {
 		// Discussion exists, check if it has comments
 		const comments = await this.githubService.getDiscussionComments(
@@ -140,8 +155,13 @@ export class WatcherService {
 			(comment) => comment.author && comment.author.login === "mym0404",
 		);
 
-		if (comments.length === 0 || !hasMym0404Comment) {
-			const action = comments.length === 0 ? "Adding" : "Adding mym0404";
+		// Add comment if: no comments, no mym0404 comment, or forced reprocessing
+		if (comments.length === 0 || !hasMym0404Comment || forceReprocess) {
+			const action = forceReprocess
+				? "Re-adding (30+ days)"
+				: comments.length === 0
+					? "Adding"
+					: "Adding mym0404";
 			console.log(
 				`${action} welcome comment to discussion #${discussion.number}: ${discussion.title}`,
 			);
@@ -184,20 +204,30 @@ export class WatcherService {
 		}
 	}
 
-	private async loadProcessedPosts(): Promise<Set<string>> {
+	private async loadProcessedPosts(): Promise<Map<string, Date>> {
 		try {
 			const data = await fs.readFile(this.processedPostsFile, "utf-8");
-			const processedPosts = JSON.parse(data);
-			return new Set(processedPosts);
+			const processedPosts: ProcessedPost[] = JSON.parse(data);
+			return new Map(
+				processedPosts.map((post) => [post.name, new Date(post.date)]),
+			);
 		} catch {
-			// File doesn't exist or is invalid, return empty set
-			return new Set();
+			// File doesn't exist or is invalid, return empty map
+			return new Map();
 		}
 	}
 
-	private async saveProcessedPosts(processedPosts: Set<string>): Promise<void> {
+	private async saveProcessedPosts(
+		processedPosts: Map<string, Date>,
+	): Promise<void> {
 		try {
-			const data = JSON.stringify([...processedPosts], null, 2);
+			const posts: ProcessedPost[] = Array.from(processedPosts.entries()).map(
+				([name, date]) => ({
+					name,
+					date: date.toISOString(),
+				}),
+			);
+			const data = JSON.stringify(posts, null, 2);
 			await fs.writeFile(this.processedPostsFile, data, "utf-8");
 		} catch (error) {
 			console.error("Failed to save processed posts cache:", error);
@@ -208,18 +238,33 @@ export class WatcherService {
 		return post.folderName;
 	}
 
-	private isPostProcessed(
+	private checkPostStatus(
 		post: GitHubPost,
-		processedPosts: Set<string>,
-	): boolean {
+		processedPosts: Map<string, Date>,
+	): { shouldSkip: boolean; needsReprocessing: boolean } {
 		const postId = this.generatePostId(post);
-		return processedPosts.has(postId);
+		const lastProcessedDate = processedPosts.get(postId);
+
+		if (!lastProcessedDate) {
+			return { shouldSkip: false, needsReprocessing: false };
+		}
+
+		// Check if more than 30 days have passed
+		const now = Date.now();
+		const daysSinceLastProcessed =
+			(now - lastProcessedDate.getTime()) / (1000 * 60 * 60 * 24);
+
+		if (daysSinceLastProcessed >= 30) {
+			return { shouldSkip: false, needsReprocessing: true };
+		}
+
+		return { shouldSkip: true, needsReprocessing: false };
 	}
 
 	private async markPostAsProcessed(post: GitHubPost): Promise<void> {
 		const processedPosts = await this.loadProcessedPosts();
 		const postId = this.generatePostId(post);
-		processedPosts.add(postId);
+		processedPosts.set(postId, new Date());
 		await this.saveProcessedPosts(processedPosts);
 		console.log(`Marked post as processed: ${post.folderName}`);
 	}

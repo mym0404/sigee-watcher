@@ -8,42 +8,6 @@ Sigee Watcher는 GitHub 저장소를 모니터링하여 자동으로 Giscus 댓�
 
 ## Commands
 
-### Development
-```bash
-# Build TypeScript to JavaScript
-pnpm run build
-
-# Compile and run (production)
-pnpm start
-
-# Compile and run (development)
-pnpm run dev
-
-# Compile in watch mode (doesn't run the code)
-pnpm run dev:watch
-
-# Type checking without emitting files
-pnpm run typecheck
-```
-
-### Code Quality
-```bash
-# Run Biome linter
-pnpm run lint
-
-# Run linter with auto-fix
-pnpm run lint:fix
-
-# Format code with Biome
-pnpm run format
-
-# Run Biome check with auto-fix (includes linting and formatting)
-pnpm run check
-
-# Quick check: Biome check + typecheck
-pnpm run t
-```
-
 ### Cleanup
 ```bash
 # Remove compiled dist directory

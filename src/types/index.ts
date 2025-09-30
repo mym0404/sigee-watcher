@@ -8,6 +8,11 @@ export interface GitHubPost {
 	category: string;
 }
 
+export interface ProcessedPost {
+	name: string;
+	date: string;
+}
+
 export interface Discussion {
 	number: number;
 	title: string;
