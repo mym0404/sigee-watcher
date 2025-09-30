@@ -39,10 +39,16 @@ export interface CommentGenerationConfig {
 	fallbackComments: string[];
 }
 
+export type PostFileStructure = "folder-with-index" | "flat-files";
+
+export type DiscussionMappingType = "pathname-folder" | "pathname-url";
+
 export interface GitHubRepoConfig {
 	owner: string;
 	repo: string;
 	postsPath: string;
+	postFileStructure: PostFileStructure;
+	discussionMappingType: DiscussionMappingType;
 	discussion: DiscussionConfig;
 	commentGeneration: CommentGenerationConfig;
 }

@@ -3,6 +3,7 @@ import type {
 	CommentGenerationConfig,
 	Discussion,
 	DiscussionConfig,
+	DiscussionMappingType,
 	GitHubPost,
 } from "../types/index.js";
 
@@ -10,6 +11,7 @@ export class DiscussionService {
 	private config: DiscussionConfig;
 	private owner: string;
 	private repo: string;
+	private readonly discussionMappingType: DiscussionMappingType;
 	private genAI: GoogleGenerativeAI;
 	private model: any;
 	private commentConfig: CommentGenerationConfig;
@@ -20,10 +22,12 @@ export class DiscussionService {
 		repo: string,
 		geminiApiKey: string,
 		commentConfig: CommentGenerationConfig,
+		discussionMappingType: DiscussionMappingType,
 	) {
 		this.config = config;
 		this.owner = owner;
 		this.repo = repo;
+		this.discussionMappingType = discussionMappingType;
 		this.genAI = new GoogleGenerativeAI(geminiApiKey);
 		this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 		this.commentConfig = commentConfig;
@@ -31,6 +35,11 @@ export class DiscussionService {
 
 	// Generate the discussion title for a post (matching giscus format)
 	generateDiscussionTitle(post: GitHubPost): string {
+		if (this.discussionMappingType === "pathname-url") {
+			const slug = post.folderName.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+			const encodedSlug = encodeURIComponent(slug);
+			return `posts/${encodedSlug}/`;
+		}
 		return `posts/${post.folderName}/`;
 	}
 

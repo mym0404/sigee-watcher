@@ -20,6 +20,8 @@ const REPO_CONFIGS: Record<string, GitHubRepoConfig> = {
 		owner: "sigee-min",
 		repo: "www.sigee.xyz",
 		postsPath: "src/content/posts",
+		postFileStructure: "folder-with-index",
+		discussionMappingType: "pathname-folder",
 		discussion: {
 			repo: "sigee-min/www.sigee.xyz",
 			repoId: "R_kgDOPCTBLQ",
@@ -109,6 +111,8 @@ const REPO_CONFIGS: Record<string, GitHubRepoConfig> = {
 		owner: "HotHyun",
 		repo: "hothyun.github.io",
 		postsPath: "_posts",
+		postFileStructure: "flat-files",
+		discussionMappingType: "pathname-url",
 		discussion: {
 			repo: "HotHyun/hothyun.github.io",
 			repoId: "R_kgDOP0aOYg",

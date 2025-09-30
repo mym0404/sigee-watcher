@@ -25,6 +25,7 @@ export class WatcherService {
 			repoConfig.owner,
 			repoConfig.repo,
 			repoConfig.postsPath,
+			repoConfig.postFileStructure,
 		);
 		this.discussionService = new DiscussionService(
 			repoConfig.discussion,
@@ -32,6 +33,7 @@ export class WatcherService {
 			repoConfig.repo,
 			config.gemini.apiKey,
 			repoConfig.commentGeneration,
+			repoConfig.discussionMappingType,
 		);
 	}
 
@@ -80,21 +82,15 @@ export class WatcherService {
 			// Create new discussion for this post
 			console.log(`Creating new discussion for post: ${post.folderName}`);
 
-			const welcomeComment =
-				await this.discussionService.generateWelcomeComment(post);
-
 			discussion = await this.githubService.createDiscussion(
 				discussionTitle,
-				welcomeComment,
+				"", // Create with an empty body
 				this.repoConfig.discussion.categoryId,
 			);
 
 			if (discussion) {
 				console.log(
 					`✅ Created discussion #${discussion.number}: ${discussionTitle}`,
-				);
-				console.log(
-					`✅ Added welcome comment to new discussion for ${post.folderName}`,
 				);
 			} else {
 				console.log(`❌ Failed to create discussion for ${post.folderName}`);

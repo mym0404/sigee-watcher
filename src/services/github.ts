@@ -1,26 +1,47 @@
 import { Octokit } from "@octokit/rest";
-import type { Discussion, GitHubPost } from "../types/index.js";
+import type {
+	Discussion,
+	GitHubPost,
+	PostFileStructure,
+} from "../types/index.js";
 
 export class GitHubService {
 	private readonly _octokit: Octokit;
 	private readonly owner: string;
 	private readonly repo: string;
 	private readonly postsPath: string;
+	private readonly postFileStructure: PostFileStructure;
 
 	get octokit(): Octokit {
 		return this._octokit;
 	}
 
-	constructor(token: string, owner: string, repo: string, postsPath: string) {
+	constructor(
+		token: string,
+		owner: string,
+		repo: string,
+		postsPath: string,
+		postFileStructure: PostFileStructure,
+	) {
 		this._octokit = new Octokit({
 			auth: token,
 		});
 		this.owner = owner;
 		this.repo = repo;
 		this.postsPath = postsPath;
+		this.postFileStructure = postFileStructure;
 	}
 
 	async getPostFolders(path = this.postsPath): Promise<GitHubPost[]> {
+		if (this.postFileStructure === "folder-with-index") {
+			return this.getPostsFromFoldersWithIndex(path);
+		}
+		return this.getPostsFromFlatFiles(path);
+	}
+
+	private async getPostsFromFoldersWithIndex(
+		path: string,
+	): Promise<GitHubPost[]> {
 		try {
 			const { data } = await this._octokit.rest.repos.getContent({
 				owner: this.owner,
@@ -57,6 +78,60 @@ export class GitHubService {
 		} catch (error) {
 			console.error("Error fetching post folders:", error);
 			return [];
+		}
+	}
+
+	private async getPostsFromFlatFiles(path: string): Promise<GitHubPost[]> {
+		try {
+			const posts: GitHubPost[] = [];
+			await this.collectMarkdownFiles(path, posts);
+			return posts;
+		} catch (error) {
+			console.error("Error fetching flat files:", error);
+			return [];
+		}
+	}
+
+	private async collectMarkdownFiles(
+		path: string,
+		posts: GitHubPost[],
+	): Promise<void> {
+		try {
+			const { data } = await this._octokit.rest.repos.getContent({
+				owner: this.owner,
+				repo: this.repo,
+				path,
+			});
+
+			if (!Array.isArray(data)) {
+				return;
+			}
+
+			for (const item of data) {
+				if (item.type === "file") {
+					const isMarkdown =
+						item.name.endsWith(".md") || item.name.endsWith(".mdx");
+					if (isMarkdown) {
+						const fileContent = await this.getFileContent(item.path);
+						if (fileContent) {
+							const fileName = item.name.replace(/\.(md|mdx)$/, "");
+							const postData = this.parsePostContent(
+								fileContent,
+								fileName,
+								item.path,
+							);
+							if (postData) {
+								posts.push(postData);
+							}
+						}
+					}
+				} else if (item.type === "dir") {
+					// Recursive call for subdirectories
+					await this.collectMarkdownFiles(item.path, posts);
+				}
+			}
+		} catch (error) {
+			console.error(`Error collecting markdown files from ${path}:`, error);
 		}
 	}
 
@@ -109,7 +184,7 @@ export class GitHubService {
 		frontmatter: string,
 		key: string,
 	): string | null {
-		const regex = new RegExp(`^${key}:\\s*(.+)$`, "m");
+		const regex = new RegExp(`^${key}:\s*(.+)`, "m");
 		const match = frontmatter.match(regex);
 		return match ? match[1].trim() : null;
 	}
@@ -140,13 +215,13 @@ export class GitHubService {
 						nodes {
 							... on Discussion {
 								number
-								title
-								url
-								createdAt
-								category {
-									name
-								}
+							title
+							url
+							createdAt
+							category {
+								name
 							}
+						}
 						}
 					}
 				}
@@ -189,13 +264,13 @@ export class GitHubService {
 						discussions(first: $first) {
 							nodes {
 								number
-								title
-								url
-								createdAt
-								category {
-									name
-								}
+							title
+							url
+							createdAt
+							category {
+								name
 							}
+						}
 						}
 					}
 				}
@@ -233,7 +308,7 @@ export class GitHubService {
 							comments(first: $first) {
 								nodes {
 									id
-									body
+								body
 									createdAt
 									author {
 										login
