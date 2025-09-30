@@ -13,7 +13,6 @@ export class WatcherService {
 	private githubService: GitHubService;
 	private discussionService: DiscussionService;
 	private repoConfig: GitHubRepoConfig;
-	private repoKey: string;
 	private cacheDir: string = ".cache";
 	private processedPostsFile: string;
 
@@ -23,7 +22,6 @@ export class WatcherService {
 			throw new Error(`Repository configuration not found for: ${repoKey}`);
 		}
 
-		this.repoKey = repoKey;
 		this.repoConfig = repoConfig;
 		this.processedPostsFile = join(
 			this.cacheDir,
@@ -139,7 +137,7 @@ export class WatcherService {
 
 		// Check if mym0404 has already commented
 		const hasMym0404Comment = comments.some(
-			(comment: any) => comment.author && comment.author.login === "mym0404",
+			(comment) => comment.author && comment.author.login === "mym0404",
 		);
 
 		if (comments.length === 0 || !hasMym0404Comment) {
@@ -191,7 +189,7 @@ export class WatcherService {
 			const data = await fs.readFile(this.processedPostsFile, "utf-8");
 			const processedPosts = JSON.parse(data);
 			return new Set(processedPosts);
-		} catch (error) {
+		} catch {
 			// File doesn't exist or is invalid, return empty set
 			return new Set();
 		}

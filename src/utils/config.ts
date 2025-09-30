@@ -25,7 +25,8 @@ const REPO_CONFIGS: Record<string, GitHubRepoConfig> = {
 			categoryId: "DIC_kwDOPCTBLc4CsOn9",
 		},
 		commentGeneration: {
-			promptTemplate: (post) => `
+			promptTemplate: (post) =>
+				`
 다음 블로그 포스트의 제목과 내용에 대해서 칭찬하는 글을 존댓말로 여러 이모티콘을 섞어서
 화려하게 300자 정도로 작성하며 해군 SW 개발병 710기의 동기로써 자랑스럽다는 내용의 블로그 포스팅에 대한 댓글을 generation 해주세요.
 
