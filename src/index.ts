@@ -6,11 +6,25 @@ const main = async (): Promise<void> => {
 		console.log("🌟 Starting Sigee Watcher...");
 
 		const config = getConfig();
-		const watcher = new WatcherService(config);
+		const repoKeys = Object.keys(config.repos);
 
-		await watcher.run();
+		console.log(`Found ${repoKeys.length} repository(s) to watch:`);
+		for (const repoKey of repoKeys) {
+			console.log(`  - ${repoKey}`);
+		}
+		console.log("");
 
-		console.log("🎯 Watcher run completed, exiting...");
+		for (const repoKey of repoKeys) {
+			console.log(`\n📦 Processing repository: ${repoKey}`);
+			console.log("=".repeat(50));
+
+			const watcher = new WatcherService(config, repoKey);
+			await watcher.run();
+
+			console.log("=".repeat(50));
+		}
+
+		console.log("\n🎯 All repositories processed, exiting...");
 		process.exit(0);
 	} catch (error) {
 		console.error("❌ Failed to run watcher:", error);

@@ -2,9 +2,9 @@ import { Octokit } from "@octokit/rest";
 import type { Discussion, GitHubPost } from "../types/index.js";
 
 export class GitHubService {
-	private _octokit: Octokit;
-	private owner: string;
-	private repo: string;
+	private readonly _octokit: Octokit;
+	private readonly owner: string;
+	private readonly repo: string;
 
 	get octokit(): Octokit {
 		return this._octokit;

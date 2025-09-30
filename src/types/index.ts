@@ -24,13 +24,33 @@ export interface DiscussionConfig {
 	categoryId: string;
 }
 
+export interface ProgressBarConfig {
+	startDate: string;
+	endDate: string;
+	label: string;
+}
+
+export interface CommentGenerationConfig {
+	// Generate prompt for AI comment generation
+	promptTemplate: (post: GitHubPost) => string;
+	// Optional progress bar configuration
+	progressBar?: ProgressBarConfig;
+	// Fallback comments when AI fails
+	fallbackComments: string[];
+}
+
+export interface GitHubRepoConfig {
+	owner: string;
+	repo: string;
+	discussion: DiscussionConfig;
+	commentGeneration: CommentGenerationConfig;
+}
+
 export interface AppConfig {
 	github: {
 		token: string;
-		owner: string;
-		repo: string;
 	};
-	discussion: DiscussionConfig;
+	repos: Record<string, GitHubRepoConfig>;
 	gemini: {
 		apiKey: string;
 	};
