@@ -126,7 +126,12 @@ export class WatcherService {
 			action = comments.length === 0 ? "Adding" : "Adding mym0404";
 		} else {
 			// Check if last mym0404 comment is older than 30 days
-			const lastComment = mym0404Comments[mym0404Comments.length - 1];
+			const sortedComments = mym0404Comments.sort(
+				(a, b) =>
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+			);
+
+			const lastComment = sortedComments[0];
 			const lastCommentDate = new Date(lastComment.createdAt);
 			const now = Date.now();
 			const daysSinceLastComment =
