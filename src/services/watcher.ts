@@ -84,7 +84,7 @@ export class WatcherService {
 
 			discussion = await this.githubService.createDiscussion(
 				discussionTitle,
-				"", // Create with an empty body
+				"giscus comment discussion",
 				this.repoConfig.discussion.categoryId,
 			);
 
